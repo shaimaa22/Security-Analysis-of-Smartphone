@@ -1,0 +1,98 @@
+package com.grad.encryption;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import com.grad.encryption.R;
+import com.grad.encryption.Fragments.Create_Password;
+import com.grad.encryption.Fragments.Login;
+
+import java.io.File;
+
+public class MainActivity extends AppCompatActivity {
+    public static final String SHARED_TAG = "LOG_PASSWORD";
+    public static boolean Reserved = false ;
+    public static String Password="";
+    public static Shared_Pref pref;
+    public static String EncryptionType="SHA1withRSA";//Yu can change it to MD5withRSA
+    private Activity context;
+    public static RelativeLayout Loader;
+    FragmentManager fm;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Loader = findViewById(R.id.Loader_View);
+        context = this;
+        pref = new Shared_Pref(this);
+
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                1);
+        final int RequestCode = 7775;
+
+
+
+
+
+    }
+
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+
+                    Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+
+
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    if(!Reserved) {
+        File path = new File(Environment.getExternalStorageDirectory().toString() + "/.Encrypted_Files/.Decrypted/");
+        DeleteDecrypted(path);
+    }
+    }
+
+    @Override
+    protected void onResume() {
+
+        Reserved=false;
+
+        File path =new File(Environment.getExternalStorageDirectory().toString()+"/.Encrypted_Files/.Decrypted/");
+        DeleteDecrypted(path);
+        Password=pref.ReadShared(SHARED_TAG);
+        Log.e("PasswordRes","Res: "+Password);
+        if(Password == null||Password.equals(""))
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new Create_Password()).commit();
+        else
+        {
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new Login()).commit();
+        }
+   
+}
