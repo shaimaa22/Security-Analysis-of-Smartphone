@@ -1,0 +1,231 @@
+package com.grad.encryption.Fragments;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.GridView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+import com.grad.encryption.Adaptors.Files_List_Adaptor;
+import com.grad.encryption.BuildConfig;
+import com.grad.encryption.FileEncryptionManager;
+import com.grad.encryption.MainActivity;
+import com.grad.encryption.R;
+import com.obsez.android.lib.filechooser.ChooserDialog;
+
+import java.io.File;
+
+import java.util.ArrayList;
+
+import static com.grad.encryption.Utils.FileUtils.ReadFile;
+import static com.grad.encryption.Utils.FileUtils.writeToFile;
+
+public class File_Explorer_Fragment extends Fragment {
+    private View RootView;
+    static File[] files;
+    static ArrayList<File> FilesArray;
+    static Files_List_Adaptor adaptor = null;
+    static GridView GridV;
+    static Activity context;
+    private int FILE_REQUEST_CODE=5;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return RootView = inflater.inflate(R.layout.file_explorer_fragment,container,false);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        GridV=RootView.findViewById(R.id.list);
+        ImageView AddNewFile=RootView.findViewById(R.id.add_new_encryption);
+        context = getActivity();
+        LoadFiles();
+        GridV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MainActivity.Loader.setVisibility(View.VISIBLE);
+                MainActivity.Reserved=true;
+                final int pos =position;
+                String Name=FilesArray.get(pos).getName();
+                final File Source = new File(FilesArray.get(pos).getPath());
+                final File Decrypted = new File(Source.getParent() + "/.Decrypted/" + Source.getName());
+                final File PrivateKey=new File(Source.getParent() +"/PrivateKeys/" + Source.getName()+".pk2");
+                final File PublicKey=new File(Source.getParent()+ "/PublicKeys/" + Source.getName()+".pk2");
+                if(PrivateKey.exists()&&PublicKey.exists())
+                {
+                              
+                        }).start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else
+                {
+                    Toast.makeText(getContext(),"Encrypted Keys Not Found",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        AddNewFile.setOnClickListener(EncryptFile);
+
+        TextView ChangePassword = RootView.findViewById(R.id.change_pass);
+
+        ChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new Change_Password()).commit();
+            }
+
+        });
+    }
+
+
+
+
+        private static String getMime(File url) {
+            // Create URI
+            File file=url;
+            String Mime_Type = "*/*";
+
+            if (url.toString().contains(".doc") || url.toString().contains(".docx")) {
+                // Word document
+                Mime_Type ="application/msword";
+            } else if(url.toString().contains(".pdf")) {
+                // PDF file
+                Mime_Type ="application/pdf";
+            } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
+                // Powerpoint file
+                Mime_Type ="application/vnd.ms-powerpoint";
+            } else if(url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
+                // Excel file
+                Mime_Type ="application/vnd.ms-excel";
+            } else if(url.toString().contains(".zip") || url.toString().contains(".rar")) {
+                // WAV audio file
+                Mime_Type ="application/x-wav";
+            } else if(url.toString().contains(".rtf")) {
+                // RTF file
+                Mime_Type ="application/rtf";
+            } else if(url.toString().contains(".wav") || url.toString().contains(".mp3")) {
+                // WAV audio file
+                Mime_Type ="audio/x-wav";
+            } else if(url.toString().contains(".gif")) {
+                // GIF file
+                Mime_Type ="image/gif";
+            } else if(url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
+                // JPG file
+                Mime_Type ="image/jpeg";
+            } else if(url.toString().contains(".txt")||url.toString().contains(".text")) {
+                // Text file
+                Mime_Type ="text/plain";
+            } else if(url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
+                // Video files
+                Mime_Type ="video/*";
+            } else {
+                //if you want you can also define the intent type for any other file
+
+                //additionally use else clause below, to manage other unknown extensions
+                //in this case, Android will show all applications installed on the device
+                //so you can choose which application to use
+                Mime_Type ="*/*";
+            }
+
+            return Mime_Type;
+        }
+
+
+
+    public static void LoadFiles()
+    {
+         FilesArray = new ArrayList<>();
+        try {
+            String path = Environment.getExternalStorageDirectory().toString() + "/.Encrypted_Files/";
+            Log.v("direct", path);
+            File directory = new File(path);
+            files = directory.listFiles();
+
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isFile())
+                    FilesArray.add(files[i]);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        Files_List_Adaptor adaptor = new Files_List_Adaptor(context,R.layout.file_explorer_row,FilesArray);
+        GridV.setAdapter(adaptor);
+        if(adaptor != null)
+            adaptor.notifyDataSetChanged();
+    }
+
+
+    View.OnClickListener EncryptFile = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            new ChooserDialog().with(getActivity())
+                    .withStartFile(Environment.getExternalStorageDirectory().getAbsolutePath())
+                    .withChosenListener(new ChooserDialog.Result() {
+                        @Override
+                        public void onChoosePath(final String path, File pathFile) {
+                            MainActivity.Loader.setVisibility(View.VISIBLE);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    File Source = new File(path);
+                                    Log.v("file1", path);
+                                    File Destination = new File("/storage/emulated/0/.Encrypted_files/" + Source.getName());
+
+                                    FileEncryptionManager mFileEncryptionManager=FileEncryptionManager.getInstance();
+                                    mFileEncryptionManager.setEncryptionType(MainActivity.EncryptionType);
+                                    try {
+                                        mFileEncryptionManager.generateKey();
+                                        String PrivateKey = mFileEncryptionManager.getPrivateKey();
+                                        String PublicKey = mFileEncryptionManager.getPublicKey();
+                                       byte[] result = mFileEncryptionManager.encryptFileByPublicKey(Source, Destination);
+                                        String PrivateKeyPath = Destination.getParent()+"/PrivateKeys/";
+                                        String PrivateKeyName =Destination.getName()+".pk2";
+                                        String PublicKeyPath = Destination.getParent()+"/PublicKeys/" ;
+                                        String PublicKeyName = Destination.getName()+".pk2";
+                                        writeToFile(PrivateKey, context,PrivateKeyPath,PrivateKeyName);
+                                        writeToFile(PublicKey,context,PublicKeyPath,PublicKeyName);
+
+                                    context.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            LoadFiles();
+                                            MainActivity.Loader.setVisibility(View.GONE);
+                                        }
+                                    });
+
+                                }
+                            }).start();
+
+                        }
+                    })
+                    .build()
+                    .show();
+        }
+    };
+
+
+
+}
