@@ -1,0 +1,47 @@
+package com.grad.encryption;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.v7.app.AppCompatActivity;
+
+import static android.content.Context.MODE_PRIVATE;
+
+public class Shared_Pref {
+    static Context context;
+    Activity activity;
+    private static SharedPreferences mPrefs;
+    public Shared_Pref(AppCompatActivity Activity)
+    {
+        mPrefs = Activity.getPreferences(MODE_PRIVATE);
+        activity=Activity;
+        context=Activity.getApplicationContext();
+    }
+   
+
+    public  void ClearShared(String Page, String Response){
+        try
+        {
+            SharedPreferences.Editor prefsEditor = mPrefs.edit();
+            prefsEditor.clear();
+            prefsEditor.apply();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public  void ClearShared(){
+        PushShared("Login_Data","");
+        PushShared("Login_Type","");
+    }
+
+
+    public String ReadShared(String Page)
+    {
+        return  mPrefs.getString(Page,"");
+    }
+
+
+}
