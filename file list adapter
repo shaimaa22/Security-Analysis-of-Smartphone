@@ -1,0 +1,143 @@
+package com.grad.encryption.Adaptors;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.grad.encryption.BuildConfig;
+import com.grad.encryption.FileEncryptionManager;
+import com.grad.encryption.MainActivity;
+import com.grad.encryption.R;
+import com.grad.encryption.Utils.FileUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import static com.grad.encryption.Utils.FileUtils.ReadFile;
+
+public class Files_List_Adaptor  extends ArrayAdapter  {
+    ArrayList<File> files ;
+    Activity context;
+
+   
+    @Override
+    public int getCount() {
+            return files.size();
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    @NonNull
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        LayoutInflater inflater = context.getLayoutInflater();
+        View rowview=inflater.inflate(R.layout.file_explorer_row,null,true);
+        TextView FileName = rowview.findViewById(R.id.file_name1);
+        ImageView FileImage = rowview.findViewById(R.id.file_image1);
+        RelativeLayout Container1=rowview.findViewById(R.id.file1_container);
+        setIcon(files.get(position),FileImage);
+        FileName.setText(files.get(position).getName());
+        Container1.setVisibility(View.VISIBLE);
+        Container1.setTag(position);
+        return rowview;
+}
+
+    private void setIcon(File file, ImageView holder) {
+
+        String extension;
+        Drawable drawable = null;
+
+        try {
+
+             int extention_index = file.getAbsolutePath().lastIndexOf(".");
+            extension = file.getAbsolutePath().substring(extention_index);
+            Log.d("Extention",extension);
+            if (file.isFile()) {
+
+                switch (extension.toLowerCase()) {
+
+                    case ".c":
+                    case ".cpp":
+                    case ".exe":
+                    case ".h":
+                    case ".html":
+                    case ".java":
+                    case ".log":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_file);
+                        break;
+                    case ".ppt":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ppt_icon);
+                        break;
+                    case ".xls":
+                    case ".xlsx":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.sheets_ico);
+                        break;
+                    case ".doc":
+                    case ".docx":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.document_icon);
+                        break;
+                    case ".txt":
+                    case ".text":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.text_ico);
+                        break;
+                    case ".pdf":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.pdf_ico);
+                        break;
+
+                    case ".3ga":
+                    case ".aac":
+                    case ".mp3":
+                    case ".m4a":
+                    case ".ogg":
+                    case ".wav":
+                    case ".wma":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_audio);
+                        break;
+
+                    case ".3gp":
+                    case ".avi":
+                    case ".mpg":
+                    case ".mpeg":
+                    case ".mp4":
+                    case ".mkv":
+                    case ".webm":
+                    case ".wmv":
+                    case ".vob":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_video);
+                        break;
+
+                    case ".ai":
+                    case ".bmp":
+                    case ".exif":
+                    case ".gif":
+                    case ".jpg":
+                    case ".jpeg":
+                    case ".png":
+                    case ".svg":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_image);
+                        break;
+
+                    case ".rar":
+                    case ".zip":
+                    case ".ZIP":
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_compressed);
+                        break;
